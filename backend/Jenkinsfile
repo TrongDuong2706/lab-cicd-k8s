@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        // ================= STAGE CHA CHỨA ĐIỀU KIỆN =================
+        stage('Build and Deploy Backend') {
+            when {
+                expression {
+                    // Chỉ chạy khi có file thay đổi trong thư mục 'frontend/'
+                    return sh(returnStatus: true, script: "git diff --name-only HEAD~1 HEAD | grep -q 'backend/'") == 0
+                }
+            }
+            stages {
+                stage('1. Checkout Code') {
+                    steps {
+                        echo "Checking out source code..."
+                        checkout scm
+                    }
+                }
+
+                stage('2. Test') {
+                    steps {
+                        dir('backend') {
+                            script {
+                                echo "Test stage 2: whoami, pwd, ls -l"
+                                sh 'whoami'
+                                sh 'pwd'
+                                sh 'ls -l'
+                            }
+                        }
+                    }
+                }
+            } // đóng stages con
+        } // đóng stage cha
+    } // đóng stages chính
+}
