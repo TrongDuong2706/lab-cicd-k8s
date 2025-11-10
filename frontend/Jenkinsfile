@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_REGION = "ap-southeast-1"
+        ECR_REPO   = "980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend"
+    }
+
     stages {
-        // ================= STAGE CHA CHỨA ĐIỀU KIỆN =================
         stage('Build and Deploy Frontend') {
             when {
                 expression {
@@ -18,19 +22,75 @@ pipeline {
                     }
                 }
 
-                stage('2. Test') {
+                stage('2. Prepare IMAGE_TAG') {
                     steps {
                         dir('frontend') {
                             script {
-                                echo "Test stage 2: whoami, pwd, ls -l"
-                                sh 'whoami'
-                                sh 'pwd'
-                                sh 'ls -l'
+                                // Lấy commit hash ngắn làm tag
+                                env.IMAGE_TAG = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
+                                echo "Using commit hash ${env.IMAGE_TAG} as Docker tag"
                             }
                         }
                     }
                 }
-            } // đóng stages con
-        } // đóng stage cha
-    } // đóng stages chính
+
+                stage('3. Build Docker Image') {
+                    steps {
+                        dir('frontend') {
+                            echo "Building Docker image..."
+                            sh "docker build -t $ECR_REPO:$IMAGE_TAG ."
+                        }
+                    }
+                }
+
+                stage('4. Trivy Scan Image') {
+                    steps {
+                        dir('frontend') {
+                            echo "Scanning Docker image with Trivy..."
+                            sh """
+                                docker run --rm \
+                                  -v \$(pwd):/workspace \
+                                  -v /var/run/docker.sock:/var/run/docker.sock \
+                                  aquasec/trivy image \
+                                    --format template \
+                                    --template "@contrib/html.tpl" \
+                                    --output /workspace/trivy-report.html \
+                                    $ECR_REPO:$IMAGE_TAG
+                            """
+                        }
+                    }
+                }
+
+                stage('5. Authenticate ECR') {
+                    steps {
+                        echo "Authenticating to ECR..."
+                        sh """
+                            aws ecr get-login-password --region $AWS_REGION | \
+                            docker login --username AWS --password-stdin $ECR_REPO
+                        """
+                    }
+                }
+
+                stage('6. Push Docker Image to ECR') {
+                    steps {
+                        echo "Pushing Docker image to ECR..."
+                        sh "docker push $ECR_REPO:$IMAGE_TAG"
+                    }
+                }
+            } 
+        } 
+    } 
+
+    post {
+        always {
+            echo "Frontend pipeline completed."
+            archiveArtifacts artifacts: 'frontend/trivy-report.html', fingerprint: true
+        }
+        success {
+            echo "Frontend successfully pushed to ECR!"
+        }
+        failure {
+            echo "Pipeline failed!"
+        }
+    }
 }
