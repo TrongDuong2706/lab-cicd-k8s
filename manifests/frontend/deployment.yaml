@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+        - name: ecr-regcred
+      containers:
+      - name: frontend
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:aaf41af
+        ports:
+        - containerPort: 80
+        env:
+        - name: APP_API_HOST
+          value: "backend"
+        - name: APP_API_PORT
+          value: "80"
