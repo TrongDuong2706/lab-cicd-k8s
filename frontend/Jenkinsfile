@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = "ap-southeast-1"
-        ECR_REPO   = "980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend"
+        AWS_REGION = credentials('AWS_REGION')
+        ECR_REPO   = credentials('ECR_REPO_FE')
     }
 
     stages {
@@ -11,7 +11,6 @@ pipeline {
         stage('Build and Deploy Frontend') {
             when {
                 expression {
-                    // Chỉ chạy khi có file thay đổi trong thư mục 'frontend/'
                     return sh(
                         returnStatus: true, 
                         script: "git diff --name-only HEAD~1 HEAD | grep -q '^frontend/'"
@@ -32,7 +31,6 @@ pipeline {
                     steps {
                         dir('frontend') {
                             script {
-                                // Lấy commit hash ngắn làm tag
                                 env.IMAGE_TAG = sh(
                                     returnStdout: true, 
                                     script: "git rev-parse --short HEAD"
@@ -94,7 +92,6 @@ pipeline {
                             script {
                                 echo "Updating deployment.yaml with new image tag ${IMAGE_TAG}"
 
-                                // Thay image tag trong deployment.yaml
                                 sh """
                                     sed -i 's#image: ${ECR_REPO}:.*#image: ${ECR_REPO}:${IMAGE_TAG}#' deployment.yaml
                                     grep 'image:' deployment.yaml
@@ -110,7 +107,6 @@ pipeline {
                                     passwordVariable: 'GIT_TOKEN'
                                 )
                             ]) {
-                                // Dùng ''' để tránh Jenkins cảnh báo secret
                                 sh '''
                                     git config user.email "jenkins@ci.com"
                                     git config user.name "Jenkins CI"
