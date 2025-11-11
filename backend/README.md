@@ -1,1 +1,1 @@
-test jenkins
+test argocd
