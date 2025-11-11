@@ -11,9 +11,10 @@ pipeline {
             when {
                 expression {
                     // Chỉ chạy khi có file thay đổi trong thư mục 'frontend/'
-                    return sh(returnStatus: true, script: "git diff --name-only HEAD~1 HEAD | grep -q 'frontend/'") == 0
+                    return sh(returnStatus: true, script: "git diff --name-only HEAD~1 HEAD | grep -q '^frontend/'") == 0
                 }
             }
+
             stages {
                 stage('1. Checkout Code') {
                     steps {
@@ -26,7 +27,6 @@ pipeline {
                     steps {
                         dir('frontend') {
                             script {
-                                // Lấy commit hash ngắn làm tag
                                 env.IMAGE_TAG = sh(returnStdout: true, script: "git rev-parse --short HEAD").trim()
                                 echo "Using commit hash ${env.IMAGE_TAG} as Docker tag"
                             }
@@ -77,9 +77,39 @@ pipeline {
                         sh "docker push $ECR_REPO:$IMAGE_TAG"
                     }
                 }
-            } 
-        } 
-    } 
+
+                stage('7. Update Deployment Manifest') {
+                    steps {
+                        dir('manifests/frontend') {
+                            script {
+                                echo "Updating deployment.yaml with new image tag ${IMAGE_TAG}"
+
+                                // Update image tag trong file YAML
+                                sh """
+                                    sed -i 's#image: ${ECR_REPO}:.*#image: ${ECR_REPO}:${IMAGE_TAG}#' deployment.yaml
+                                """
+
+                                sh "grep 'image:' deployment.yaml"
+                            }
+                        }
+
+                        script {
+                            withCredentials([usernamePassword(credentialsId: 'jenkins-token-github', usernameVariable: 'GIT_USER', passwordVariable: 'GIT_TOKEN')]) {
+                                sh """
+                                    git config user.email "jenkins@ci.com"
+                                    git config user.name "Jenkins CI"
+
+                                    git add manifests/frontend/deployment.yaml
+                                    git commit -m "Update frontend image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+                                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/TrongDuong2806/lab-cicd-k8s.git HEAD:develop
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     post {
         always {
@@ -87,7 +117,7 @@ pipeline {
             archiveArtifacts artifacts: 'frontend/trivy-report.html', fingerprint: true
         }
         success {
-            echo "Frontend successfully pushed to ECR!"
+            echo "Frontend successfully pushed to ECR and manifest updated!"
         }
         failure {
             echo "Pipeline failed!"
