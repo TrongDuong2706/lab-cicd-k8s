@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: duongtrong27/lab-cicd-backend:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_NAME
+          value: "mydatabase"
+        - name: DB_USERNAME
+          value: "myuser"
+        - name: DB_PASSWORD
+          value: "mypassword"
