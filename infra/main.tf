@@ -4,6 +4,7 @@ provider "aws" {
 
 locals {
   full_jenkins_domain_name = "${var.jenkins_subdomain}.${var.domain_name}"
+  full_argocd_domain_name  = "${var.argocd_subdomain}.${var.domain_name}"
 }
 
 resource "aws_route53_zone" "main" {
@@ -89,6 +90,14 @@ module "route53_jenkins_record" {
   source         = "./modules/route53"
   zone_id        = aws_route53_zone.main.zone_id
   record_name    = local.full_jenkins_domain_name
+  alias_dns_name = module.alb.alb_dns_name
+  alias_zone_id  = module.alb.alb_zone_id
+}
+
+module "route53_argocd_record" {
+  source         = "./modules/route53"
+  zone_id        = aws_route53_zone.main.zone_id
+  record_name    = local.full_argocd_domain_name
   alias_dns_name = module.alb.alb_dns_name
   alias_zone_id  = module.alb.alb_zone_id
 }

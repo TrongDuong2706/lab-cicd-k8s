@@ -51,6 +51,14 @@ resource "aws_security_group" "private" {
     security_groups = [aws_security_group.public.id]
   }
 
+  #For ArgoCD
+  ingress {
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.public.id]
+  }
+
   # Luật vào: NodePort range từ public-sg
   ingress {
     from_port       = 30080
@@ -64,6 +72,14 @@ resource "aws_security_group" "private" {
     protocol        = "tcp"
     security_groups = [aws_security_group.public.id] # Chỉ cho phép từ SG của ALB
   }
+  # Cho phép ALB truy cập vào ArgoCD NodePort 30347
+ingress {
+  from_port       = 30347
+  to_port         = 30347
+  protocol        = "tcp"
+  security_groups = [aws_security_group.public.id]  # Chỉ ALB được phép
+}
+
 
   
 
