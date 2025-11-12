@@ -1,21 +1,19 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dev-backend-ingress
+  name: backend-dev-ingress
   namespace: my-app
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
-    nginx.ingress.kubernetes.io/use-regex: "true"   # <--- thêm dòng này
 spec:
   rules:
-  - host: trongduong.website
+  - host: dev.trongduong.website
     http:
       paths:
-      - path: /dev(/|$)(api)(/|$)(.*)
-        pathType: ImplementationSpecific   # <--- thay Prefix bằng ImplementationSpecific
+      - path: /api
+        pathType: Prefix
         backend:
           service:
-            name: dev-backend
+            name: backend-dev
             port:
               number: 80

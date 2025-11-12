@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dev-backend
+  name: backend-dev
   namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dev-backend
+      app: backend-dev
   template:
     metadata:
       labels:
-        app: dev-backend
+        app: backend-dev
     spec:
       imagePullSecrets:
-      - name: ecr-regcred
+        - name: ecr-regcred
       containers:
-      - name: dev-backend
-        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:df8fc62
+      - name: backend
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:c5d93e8
         ports:
         - containerPort: 80
         env:
