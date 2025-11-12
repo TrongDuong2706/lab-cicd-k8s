@@ -2,10 +2,6 @@ provider "aws" {
   region = var.region
 }
 
-locals {
-  full_jenkins_domain_name = "${var.jenkins_subdomain}.${var.domain_name}"
-}
-
 resource "aws_route53_zone" "main" {
   name = var.domain_name
 }
@@ -77,18 +73,13 @@ module "alb" {
   tags                          = var.project_tags
 }
 
-module "route53_app_record" {
-  source         = "./modules/route53"
-  zone_id        = aws_route53_zone.main.zone_id
-  record_name    = var.domain_name
-  alias_dns_name = module.alb.alb_dns_name
-  alias_zone_id  = module.alb.alb_zone_id
-}
+module "route53_records" {
+  source = "./modules/route53"
 
-module "route53_jenkins_record" {
-  source         = "./modules/route53"
+  for_each = local.route53_records
+
   zone_id        = aws_route53_zone.main.zone_id
-  record_name    = local.full_jenkins_domain_name
+  record_name    = each.value
   alias_dns_name = module.alb.alb_dns_name
   alias_zone_id  = module.alb.alb_zone_id
 }

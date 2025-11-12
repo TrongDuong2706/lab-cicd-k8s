@@ -13,17 +13,31 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+        - name: ecr-regcred
       containers:
       - name: backend
-        image: duongtrong27/lab-cicd-backend:latest
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:d2f9382
         ports:
         - containerPort: 80
         env:
         - name: DB_HOST
-          value: "postgres"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_HOST
         - name: DB_NAME
-          value: "mydatabase"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_NAME
         - name: DB_USERNAME
-          value: "myuser"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USERNAME
         - name: DB_PASSWORD
-          value: "mypassword"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD

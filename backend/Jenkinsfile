@@ -1,16 +1,25 @@
 pipeline {
     agent any
 
+    environment {
+        AWS_REGION = credentials('AWS-REGION')
+        ECR_REPO   = credentials('ECR_REPO_BE')
+    }
+
     stages {
-        // ================= STAGE CHA CHỨA ĐIỀU KIỆN =================
+
         stage('Build and Deploy Backend') {
             when {
                 expression {
-                    // Chỉ chạy khi có file thay đổi trong thư mục 'frontend/'
-                    return sh(returnStatus: true, script: "git diff --name-only HEAD~1 HEAD | grep -q 'backend/'") == 0
+                    return sh(
+                        returnStatus: true, 
+                        script: "git diff --name-only HEAD~1 HEAD | grep -q '^backend/'"
+                    ) == 0
                 }
             }
+
             stages {
+
                 stage('1. Checkout Code') {
                     steps {
                         echo "Checking out source code..."
@@ -18,19 +27,114 @@ pipeline {
                     }
                 }
 
-                stage('2. Test') {
+                stage('2. Prepare IMAGE_TAG') {
                     steps {
                         dir('backend') {
                             script {
-                                echo "Test stage 2: whoami, pwd, ls -l"
-                                sh 'whoami'
-                                sh 'pwd'
-                                sh 'ls -l'
+                                env.IMAGE_TAG = sh(
+                                    returnStdout: true, 
+                                    script: "git rev-parse --short HEAD"
+                                ).trim()
+                                echo "Using commit hash ${env.IMAGE_TAG} as Docker tag"
                             }
                         }
                     }
                 }
-            } // đóng stages con
-        } // đóng stage cha
-    } // đóng stages chính
+
+                stage('3. Build Docker Image') {
+                    steps {
+                        dir('backend') {
+                            echo "Building Docker image..."
+                            sh "docker build -t $ECR_REPO:$IMAGE_TAG ."
+                        }
+                    }
+                }
+
+                stage('4. Trivy Scan Image') {
+                    steps {
+                        dir('backend') {
+                            echo "Scanning Docker image with Trivy..."
+                            sh """
+                                docker run --rm \
+                                    -v \$(pwd):/workspace \
+                                    -v /var/run/docker.sock:/var/run/docker.sock \
+                                    aquasec/trivy image \
+                                    --format template \
+                                    --template "@contrib/html.tpl" \
+                                    --output /workspace/trivy-report.html \
+                                    $ECR_REPO:$IMAGE_TAG
+                            """
+                        }
+                    }
+                }
+
+                stage('5. Authenticate ECR') {
+                    steps {
+                        echo "Authenticating to ECR..."
+                        sh """
+                            aws ecr get-login-password --region $AWS_REGION | \
+                                docker login --username AWS --password-stdin $ECR_REPO
+                        """
+                    }
+                }
+
+                stage('6. Push Docker Image to ECR') {
+                    steps {
+                        echo "Pushing Docker image to ECR..."
+                        sh "docker push $ECR_REPO:$IMAGE_TAG"
+                    }
+                }
+
+                stage('7. Update Deployment Manifest') {
+                    steps {
+
+                        dir('manifests/backend') {
+                            script {
+                                echo "Updating deployment.yaml with new image tag ${IMAGE_TAG}"
+
+                                sh """
+                                    sed -i 's#image: ${ECR_REPO}:.*#image: ${ECR_REPO}:${IMAGE_TAG}#' deployment.yaml
+                                    grep 'image:' deployment.yaml
+                                """
+                            }
+                        }
+
+                        script {
+                            withCredentials([
+                                usernamePassword(
+                                    credentialsId: 'jenkins-token-github', 
+                                    usernameVariable: 'GIT_USER', 
+                                    passwordVariable: 'GIT_TOKEN'
+                                )
+                            ]) {
+                                sh '''
+                                    git config user.email "jenkins@ci.com"
+                                    git config user.name "Jenkins CI"
+
+                                    git add manifests/backend/deployment.yaml
+                                    git commit -m "Update backend image tag to ${IMAGE_TAG}" || echo "No changes to commit"
+
+                                    git push https://$GIT_USER:$GIT_TOKEN@github.com/TrongDuong2706/lab-cicd-k8s.git HEAD:main
+                                '''
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Backend pipeline completed."
+            archiveArtifacts artifacts: 'backend/trivy-report.html', fingerprint: true
+        }
+        success {
+            echo "Backend successfully pushed to ECR and manifest updated!"
+        }
+        failure {
+            echo "Pipeline failed!"
+        }
+    }
 }

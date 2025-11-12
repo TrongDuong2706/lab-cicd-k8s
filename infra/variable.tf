@@ -127,3 +127,11 @@ variable "ecr_repository_names" {
   description = "Danh sách tên các ECR repositories cần tạo."
   type        = list(string)
 }
+
+# =======================================
+# ARGOCD
+variable "argocd_subdomain" {
+  description = "Subdomain for ArgoCD"
+  type        = string
+  default     = "argocd"
+}
