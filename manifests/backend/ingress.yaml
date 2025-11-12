@@ -10,20 +10,21 @@ spec:
   - host: trongduong.website
     http:
       paths:
-      - path: /dev/api           
+      - path: /dev/api
         pathType: Prefix
         backend:
           service:
             name: dev-backend-svc
             port:
               number: 80
-      - path: /uat/api          
+      - path: /uat/api
+        pathType: Prefix         # ✅ thêm dòng này
         backend:
           service:
             name: uat-backend-svc
             port:
               number: 80
-      - path: /api                 # path cho môi trường prod
+      - path: /api
         pathType: Prefix
         backend:
           service:
