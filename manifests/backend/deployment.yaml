@@ -1,18 +1,43 @@
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: backend-ingress
+  name: backend
   namespace: my-app
-  annotations:
-    kubernetes.io/ingress.class: nginx
 spec:
-  rules:
-  - http:
-      paths:
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: backend
-            port:
-              number: 80
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      imagePullSecrets:
+        - name: ecr-regcred
+      containers:
+      - name: backend
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:df8fc62
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_NAME
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USERNAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
