@@ -18,13 +18,9 @@ spec:
         image: postgres:15-alpine
         ports:
         - containerPort: 5432
-        env:
-        - name: POSTGRES_DB
-          value: "mydatabase"
-        - name: POSTGRES_USER
-          value: "myuser"
-        - name: POSTGRES_PASSWORD
-          value: "mypassword"
+        envFrom:
+        - secretRef:
+            name: postgres-secret
         livenessProbe:
           exec:
             command: ["pg_isready", "-U", "myuser", "-d", "mydatabase"]
