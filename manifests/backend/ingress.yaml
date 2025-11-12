@@ -7,8 +7,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-  - host: trongduong.website
-    http:
+  - http:
       paths:
       - path: /dev/api
         pathType: Prefix
@@ -18,7 +17,7 @@ spec:
             port:
               number: 80
       - path: /uat/api
-        pathType: Prefix         # ✅ thêm dòng này
+        pathType: Prefix
         backend:
           service:
             name: uat-backend-svc
