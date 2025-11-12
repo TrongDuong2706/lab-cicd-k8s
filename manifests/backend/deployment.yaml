@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: duongtrong27/lab-cicd-backend:latest
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:d2f9382
         ports:
         - containerPort: 80
         env:
