@@ -1,27 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dev-frontend        # thêm prefix dev
+  name: frontend
   namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: dev-frontend
+      app: frontend
   template:
     metadata:
       labels:
-        app: dev-frontend
+        app: frontend
     spec:
       imagePullSecrets:
         - name: ecr-regcred
       containers:
       - name: frontend
-        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:4918eca
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:61812d8
         ports:
         - containerPort: 80
         env:
         - name: APP_API_HOST
-          value: "dev-backend-svc"  # trỏ tới backend dev
+          value: "backend"
         - name: APP_API_PORT
           value: "80"
