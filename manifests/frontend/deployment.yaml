@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: dev-frontend
   namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: dev-frontend
   template:
     metadata:
       labels:
-        app: frontend
+        app: dev-frontend
     spec:
       imagePullSecrets:
         - name: ecr-regcred
       containers:
-      - name: frontend
+      - name: dev-frontend
         image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:61812d8
         ports:
         - containerPort: 80
