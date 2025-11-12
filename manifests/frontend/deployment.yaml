@@ -17,7 +17,7 @@ spec:
         - name: ecr-regcred
       containers:
       - name: frontend
-        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:c4ed87f
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/frontend:61812d8
         ports:
         - containerPort: 80
         env:
