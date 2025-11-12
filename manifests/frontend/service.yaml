@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: uat-frontend
   namespace: my-app
 spec:
   selector:
-    app: frontend
+    app: uat-frontend
   ports:
     - port: 80
       targetPort: 80

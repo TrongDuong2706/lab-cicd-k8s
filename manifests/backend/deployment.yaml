@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: uat-backend
   namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: uat-backend
   template:
     metadata:
       labels:
-        app: backend
+        app: uat-backend
     spec:
       imagePullSecrets:
         - name: ecr-regcred
       containers:
       - name: backend
-        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:df8fc62
+        image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:c5d93e8
         ports:
         - containerPort: 80
         env:

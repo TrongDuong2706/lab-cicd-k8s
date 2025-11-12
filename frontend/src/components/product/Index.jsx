@@ -46,7 +46,7 @@ export default function ProductIndex(props) {
               )}
             </tbody>
           </table>
-          <Link className="btn btn-primary" to="/product/create">Createss</Link>
+          <Link className="btn btn-primary" to="/product/create">Create</Link>
         </div>
       </div>
     </div>
