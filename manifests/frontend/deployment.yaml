@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend
+  name: prod-frontend
   namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: frontend
+      app: prod-frontend
   template:
     metadata:
       labels:
-        app: frontend
+        app: prod-frontend
     spec:
       imagePullSecrets:
         - name: ecr-regcred
@@ -22,6 +22,6 @@ spec:
         - containerPort: 80
         env:
         - name: APP_API_HOST
-          value: "backend"
+          value: "prod-backend"
         - name: APP_API_PORT
           value: "80"

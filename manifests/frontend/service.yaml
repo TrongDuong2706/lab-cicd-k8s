@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: frontend
+  name: prod-frontend
   namespace: my-app
 spec:
   selector:
-    app: frontend
+    app: prod-frontend
   ports:
     - port: 80
       targetPort: 80
