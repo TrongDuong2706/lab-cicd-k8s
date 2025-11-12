@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend
+  name: dev-backend        # thêm prefix dev
   namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: backend
+      app: dev-backend
   template:
     metadata:
       labels:
-        app: backend
+        app: dev-backend
     spec:
       imagePullSecrets:
         - name: ecr-regcred
