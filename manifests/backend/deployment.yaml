@@ -23,6 +23,9 @@ spec:
         env:
         - name: DB_HOST
           value: "postgres"
-        envFrom:
-        - secretRef:
-            name: postgres-secret
+        - name: DB_NAME
+          value: "mydatabase"
+        - name: DB_USERNAME
+          value: "myuser"
+        - name: DB_PASSWORD
+          value: "mypassword"
