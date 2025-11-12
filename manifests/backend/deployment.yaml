@@ -22,10 +22,22 @@ spec:
         - containerPort: 80
         env:
         - name: DB_HOST
-          value: "postgres"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_HOST
         - name: DB_NAME
-          value: "mydatabase"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_NAME
         - name: DB_USERNAME
-          value: "myuser"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_USERNAME
         - name: DB_PASSWORD
-          value: "mypassword"
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: DB_PASSWORD
