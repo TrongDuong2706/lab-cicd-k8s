@@ -13,6 +13,8 @@ spec:
       labels:
         app: backend
     spec:
+      imagePullSecrets:
+        - name: ecr-regcred
       containers:
       - name: backend
         image: 980921740481.dkr.ecr.ap-southeast-1.amazonaws.com/backend:d2f9382
