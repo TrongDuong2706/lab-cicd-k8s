@@ -135,3 +135,9 @@ variable "argocd_subdomain" {
   type        = string
   default     = "argocd"
 }
+
+
+variable "ecr_policy" {
+  description = "ecr policy"
+  type        = string
+}

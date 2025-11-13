@@ -29,6 +29,7 @@ module "iam_roles" {
   source              = "./modules/iam_roles"
   role_name           = var.jenkins_iam_role_name
   instance_profile_name = var.jenkins_iam_instance_profile_name
+  ecr_policy = var.ecr_policy
   tags                = var.project_tags
 }
 

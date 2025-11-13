@@ -22,6 +22,9 @@ domain_name        = "trongduong.website"
 jenkins_subdomain  = "jenkins"
 
 # =======================================
+ecr_policy = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+
+# =======================================
 # Cấu hình Máy chủ (Compute)
 # =======================================
 key_name                 = "lab-cicd"
@@ -50,3 +53,4 @@ jenkins_iam_instance_profile_name = "jenkins-ecr-instance-profile"
 # =======================================
 # ECR
 ecr_repository_names = ["backend", "frontend"]
+

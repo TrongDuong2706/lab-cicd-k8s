@@ -140,14 +140,13 @@ resource "aws_lb_target_group" "argocd_tg" {
 
 resource "aws_lb_target_group_attachment" "argocd_attachment" {
   target_group_arn = aws_lb_target_group.argocd_tg.arn
-  target_id        = var.k8s_node_id  # instance ID của node K8s
-  port             = 30347            # NodePort của argocd-server
+  target_id        = var.k8s_node_id  
+  port             = 30347          
 }
 
-# ✅ HTTPS listener rule cho ArgoCD
+#HTTPS listener rule cho ArgoCD
 resource "aws_lb_listener_rule" "argocd_rule" {
-  listener_arn = aws_lb_listener.https_listener.arn  # <<-- Đúng listener 443
-  priority     = 100
+  listener_arn = aws_lb_listener.https_listener.arn 
 
   action {
     type             = "forward"
