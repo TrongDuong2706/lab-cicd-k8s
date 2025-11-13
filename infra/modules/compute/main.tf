@@ -7,7 +7,7 @@ resource "aws_instance" "private_node" {
 
   associate_public_ip_address = false
   root_block_device {
-    volume_size           = 20   # 20 GB
+    volume_size           = 20 
     volume_type           = "gp2"
     delete_on_termination = true
   }
